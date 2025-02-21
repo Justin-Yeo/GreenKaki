@@ -1,29 +1,20 @@
 import Foundation
 
 struct ChatBotModel {
-    // Load recycling data from a JSON file at runtime
-    static var recyclingData: [String: String] = loadRecyclingData()
-    
-    static func loadRecyclingData() -> [String: String] {
-        if let url = Bundle.main.url(forResource: "recyclingData", withExtension: "json"),
-           let data = try? Data(contentsOf: url),
-           let decoded = try? JSONDecoder().decode([String: String].self, from: data) {
-            return decoded
-        }
-        // Fallback data if the JSON file is missing or fails to decode
-        return [
-            "plastic bottle": "Plastic Bin (rinse first!)",
-            "newspaper": "Paper Bin",
-            "glass jar": "Glass Bin",
-            "soda can": "Metal Bin",
-            "pizza box": "Compost Bin (if greasy) or Paper Bin",
-            "cardboard": "Paper Bin"
-        ]
-    }
+    // Update the dictionary with specific recycling instructions.
+    static let recyclingData: [String: String] = [
+        "plastic bottle": "Recycle in the Plastic Bin (rinse first!).",
+        "newspaper": "Recycle in the Paper Bin.",
+        "glass jar": "Recycle in the Glass Bin.",
+        "soda can": "Recycle in the Metal Bin.",
+        "pizza box": "Recycle in the Compost Bin (if greasy) or the Paper Bin.",
+        "cardboard": "Recycle in the Paper Bin.",
+        "paper": "Recycle in the Paper Bin."  // Added mapping for "paper"
+    ]
     
     static func getResponse(for input: String) -> String {
         let cleanedInput = input.lowercased().trimmingCharacters(in: .whitespaces)
-        return recyclingData[cleanedInput] ?? "Hmm, I’m not sure. Try another item!"
+        return recyclingData[cleanedInput] ?? "I'm not sure. Try another item!"
     }
 }
 
