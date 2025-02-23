@@ -1,7 +1,7 @@
 import Foundation
 
 struct ChatBotModel {
-    // Dictionary of recycling instructions. The keys are phrases we want to detect.
+    // Recycling instructions (keywords for fuzzy matching)
     static let recyclingData: [String: String] = [
         "plastic bottle": "Recycle in the Plastic Bin (rinse first!).",
         "newspaper": "Recycle in the Paper Bin.",
@@ -12,29 +12,21 @@ struct ChatBotModel {
     ]
     
     static func getResponse(for input: String) -> String {
-        // Lowercase and trim the input for consistency.
         let cleaned = input.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-        
-        // First, try an exact match.
+        // Try exact match first.
         if let exact = recyclingData[cleaned] {
             return exact
         }
-        
-        // Otherwise, iterate over the keys and check if the cleaned input contains any of the keywords.
+        // Fuzzy match by checking if input contains any key.
         for (key, response) in recyclingData {
-            // If the input contains the key, return the response.
             if cleaned.contains(key) {
                 return response
             }
-            
-            // As an extra check, if the key is singular and the input uses plural (e.g. "can" vs "cans")
-            // you might add additional conditions.
             if key.hasSuffix("can"), cleaned.contains("cans") {
                 return response
             }
         }
-        
-        // If no keyword is found, return a default message.
-        return "I'm not sure. Try another item!"
+        return "Hmm, I'm not sure. Try another item!"
     }
 }
+

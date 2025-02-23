@@ -4,8 +4,8 @@ import AVFoundation
 struct SortingGameView: View {
     @Environment(\.presentationMode) var presentationMode
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
-    
-    // Bank of 20 items
+
+    // Bank of 20 recycling items.
     let allItems: [RecyclingItem] = [
         RecyclingItem(name: "🥤", correctBin: "Plastic Bin", itemDescription: "Plastic Bottle"),
         RecyclingItem(name: "🧴", correctBin: "Plastic Bin", itemDescription: "Lotion Bottle"),
@@ -29,7 +29,7 @@ struct SortingGameView: View {
         RecyclingItem(name: "🍇", correctBin: "Compost Bin", itemDescription: "Grapes")
     ]
     
-    // Game state
+    // Game state: 5 random items.
     @State private var items: [RecyclingItem] = []
     @State private var score: Int = 0
     @State private var feedback: String = ""
@@ -41,21 +41,32 @@ struct SortingGameView: View {
         NavigationView {
             GeometryReader { geometry in
                 VStack(spacing: 0) {
-                    // Header
-                    Text("♻️Green Kaki")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .padding(.top, geometry.size.height * 0.02)
-                        .padding(.bottom, 5)
-                        .frame(maxWidth: .infinity, alignment: .center)
-                    
-                    // Top Section (title, score, bins)
+                    // Header with gradient background.
+                    ZStack {
+                        // Gradient that starts at the top edge and fills 120 points of height
+                        LinearGradient(
+                            gradient: Gradient(colors: [Color.green, Color.blue]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                        .edgesIgnoringSafeArea(.top)
+                        .frame(height: 100)
+                        
+                        // The header text centered within the gradient
+                        Text("♻️ Green Kaki")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                            .shadow(color: Color.black.opacity(0.3), radius: 3, x: 0, y: 2)
+                    }
+                    .frame(maxWidth: .infinity)
+
+
+                    // Top Section: Title, Score, and Bins.
                     topSection(geometry: geometry)
                         .frame(maxHeight: geometry.size.height * 0.45)
                     
-                    // Remove the Divider() that was here
-                    
-                    // Bottom Section (draggable items + feedback)
+                    // Bottom Section: Draggable Items & Feedback.
                     bottomSection
                         .frame(maxHeight: geometry.size.height * 0.45)
                 }
@@ -75,17 +86,14 @@ struct SortingGameView: View {
         .overlay(winOverlay)
     }
     
-    // Top half: Title, Score, Bins
+    // Top Section: Title, Score, and Bins arranged in two rows.
     func topSection(geometry: GeometryProxy) -> some View {
         VStack(spacing: 10) {
             Text("Recycling Sorting Game")
                 .font(horizontalSizeClass == .regular ? .largeTitle : .title)
                 .padding(.top, 5)
-            
             Text("Score: \(score)")
                 .font(.title2)
-            
-            // Bins in two rows: 3 in first, 2 in second
             VStack(spacing: 10) {
                 HStack(spacing: 10) {
                     ForEach(bins.prefix(3), id: \.self) { bin in
@@ -104,13 +112,12 @@ struct SortingGameView: View {
         }
     }
     
-    // Bottom half: Draggable items + feedback
+    // Bottom Section: Draggable Items with Descriptions and Feedback.
     var bottomSection: some View {
         VStack {
             Text("Drag the item into the correct bin")
                 .font(.headline)
                 .padding(.top)
-            
             HStack(alignment: .top, spacing: 20) {
                 ForEach(items) { item in
                     VStack(spacing: 5) {
@@ -120,7 +127,6 @@ struct SortingGameView: View {
                             .background(Color.orange.opacity(0.3))
                             .cornerRadius(10)
                             .onDrag { NSItemProvider(object: item.name as NSString) }
-                        
                         Text(item.itemDescription)
                             .font(.caption)
                             .foregroundColor(.secondary)
@@ -129,9 +135,7 @@ struct SortingGameView: View {
                 }
             }
             .padding(.horizontal)
-            
             Spacer()
-            
             Text(feedback)
                 .font(.headline)
                 .foregroundColor(.blue)
@@ -139,11 +143,11 @@ struct SortingGameView: View {
         }
     }
     
-    // Win overlay
+    // Win Overlay: Displays when game is won.
     var winOverlay: some View {
         Group {
             if gameWon {
-                Color.black.opacity(0.8)
+                Color.black.opacity(0.5)
                     .edgesIgnoringSafeArea(.all)
                 VStack(spacing: 20) {
                     Text("Congratulations!")
@@ -174,7 +178,7 @@ struct SortingGameView: View {
         }
     }
     
-    // Handle dropping an emoji into a bin
+    // Handle drop action for a recycling item.
     func handleDrop(for droppedEmoji: String, bin: String) {
         guard let index = items.firstIndex(where: { $0.name == droppedEmoji }) else { return }
         let item = items[index]
@@ -184,13 +188,9 @@ struct SortingGameView: View {
             let generator = UINotificationFeedbackGenerator()
             generator.notificationOccurred(.success)
             AudioServicesPlaySystemSound(1025)
-            withAnimation {
-                items.remove(at: index)
-            }
+            withAnimation(.spring()) { items.remove(at: index) }
             if items.isEmpty {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    gameWon = true
-                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { gameWon = true }
             }
         } else {
             feedback = "Oops! \(item.itemDescription) doesn't go in \(bin)."
@@ -201,10 +201,9 @@ struct SortingGameView: View {
     }
 }
 
-// A single bin drop target
 struct RecyclingBinView: View {
     let binName: String
-    var onDropAction: (String, String) -> Void
+    var onDropAction: (String, String) -> Void  // (droppedEmoji, binName)
     
     var body: some View {
         VStack {
@@ -212,7 +211,6 @@ struct RecyclingBinView: View {
                 .font(.caption)
                 .multilineTextAlignment(.center)
                 .padding(.bottom, 5)
-            
             Text("🗑️")
                 .font(.system(size: 50))
                 .padding()
@@ -233,6 +231,15 @@ struct RecyclingBinView: View {
                 }
         }
         .padding()
+    }
+}
+
+struct SortingGameView_Previews: PreviewProvider {
+    static var previews: some View {
+        Group {
+            SortingGameView().previewDevice("iPhone 15 Pro")
+            SortingGameView().previewDevice("iPad Pro (12.9-inch)")
+        }
     }
 }
 
