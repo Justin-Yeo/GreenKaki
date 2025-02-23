@@ -3,44 +3,22 @@ import AVFoundation
 
 struct SortingGameView: View {
     @Environment(\.presentationMode) var presentationMode
-
-    // Bank of 20 recycling items.
+    @Environment(\.horizontalSizeClass) var horizontalSizeClass
+    
+    // Bank of 20 items
     let allItems: [RecyclingItem] = [
-        // ✅ Plastic Bin
         RecyclingItem(name: "🥤", correctBin: "Plastic Bin", itemDescription: "Plastic Bottle"),
         RecyclingItem(name: "🧴", correctBin: "Plastic Bin", itemDescription: "Lotion Bottle"),
         RecyclingItem(name: "🍶", correctBin: "Plastic Bin", itemDescription: "Water Bottle"),
-        RecyclingItem(name: "🛍", correctBin: "Plastic Bin", itemDescription: "Plastic Bag"),
-        RecyclingItem(name: "📏", correctBin: "Plastic Bin", itemDescription: "Plastic Ruler"),
-        RecyclingItem(name: "🎤", correctBin: "Plastic Bin", itemDescription: "Plastic Microphone Toy"),
-
-        // ✅ Paper Bin
         RecyclingItem(name: "📰", correctBin: "Paper Bin", itemDescription: "Newspaper"),
         RecyclingItem(name: "📦", correctBin: "Paper Bin", itemDescription: "Cardboard Box"),
         RecyclingItem(name: "✉️", correctBin: "Paper Bin", itemDescription: "Envelope"),
-        RecyclingItem(name: "📜", correctBin: "Paper Bin", itemDescription: "Paper Scroll"),
-        RecyclingItem(name: "📕", correctBin: "Paper Bin", itemDescription: "Book"),
-        RecyclingItem(name: "📄", correctBin: "Paper Bin", itemDescription: "Loose Paper Sheet"),
-
-        // ✅ Glass Bin
         RecyclingItem(name: "🍾", correctBin: "Glass Bin", itemDescription: "Glass Bottle"),
-        RecyclingItem(name: "🏺", correctBin: "Glass Bin", itemDescription: "Glass Jar"),
-        RecyclingItem(name: "🥛", correctBin: "Glass Bin", itemDescription: "Glass Cup"),
-        RecyclingItem(name: "🥂", correctBin: "Glass Bin", itemDescription: "Wine Glass"),
-        RecyclingItem(name: "🫙", correctBin: "Glass Bin", itemDescription: "Mason Jar"),
-        RecyclingItem(name: "🍯", correctBin: "Glass Bin", itemDescription: "Honey Jar"),
-
-        // ✅ Metal Bin
-        RecyclingItem(name: "🥫", correctBin: "Metal Bin", itemDescription: "Aluminum Can"),
+        RecyclingItem(name: "🏺", correctBin: "Glass Bin", itemDescription: "Jar"),
+        RecyclingItem(name: "🥫", correctBin: "Metal Bin", itemDescription: "Can"),
         RecyclingItem(name: "🔩", correctBin: "Metal Bin", itemDescription: "Bolt"),
         RecyclingItem(name: "⚙️", correctBin: "Metal Bin", itemDescription: "Gear"),
-        RecyclingItem(name: "🔧", correctBin: "Metal Bin", itemDescription: "Wrench"),
-        RecyclingItem(name: "🔗", correctBin: "Metal Bin", itemDescription: "Metal Chain"),
-        RecyclingItem(name: "🗝", correctBin: "Metal Bin", itemDescription: "Metal Key"),
-        RecyclingItem(name: "🥄", correctBin: "Metal Bin", itemDescription: "Metal Spoon"),
-        RecyclingItem(name: "🛎", correctBin: "Metal Bin", itemDescription: "Small Bell"),
-
-        // ✅ Compost Bin (Balanced, Not Increasing)
+        RecyclingItem(name: "🍕", correctBin: "Compost Bin", itemDescription: "Pizza Box"),
         RecyclingItem(name: "🍎", correctBin: "Compost Bin", itemDescription: "Apple Core"),
         RecyclingItem(name: "🍌", correctBin: "Compost Bin", itemDescription: "Banana Peel"),
         RecyclingItem(name: "🥬", correctBin: "Compost Bin", itemDescription: "Lettuce"),
@@ -48,84 +26,101 @@ struct SortingGameView: View {
         RecyclingItem(name: "🍄", correctBin: "Compost Bin", itemDescription: "Mushroom"),
         RecyclingItem(name: "🌽", correctBin: "Compost Bin", itemDescription: "Corn Cob"),
         RecyclingItem(name: "🥑", correctBin: "Compost Bin", itemDescription: "Avocado Pit"),
+        RecyclingItem(name: "🍇", correctBin: "Compost Bin", itemDescription: "Grapes")
     ]
-
     
-    // Selected game items (5 items will be randomly picked).
+    // Game state
     @State private var items: [RecyclingItem] = []
     @State private var score: Int = 0
     @State private var feedback: String = ""
     @State private var gameWon: Bool = false
     
+    let bins = ["Plastic Bin", "Paper Bin", "Glass Bin", "Metal Bin", "Compost Bin"]
+    
     var body: some View {
-        VStack(spacing: 0) {
-            // Top half: Title, Score, and Bins arranged in two rows.
-            topSection
-                .frame(maxHeight: .infinity)
-            
-            Divider()
-            
-            // Bottom half: Draggable items (emojis with descriptions) and feedback.
-            bottomSection
-                .frame(maxHeight: .infinity)
+        NavigationView {
+            GeometryReader { geometry in
+                VStack(spacing: 0) {
+                    // Header
+                    Text("♻️Green Kaki")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .padding(.top, geometry.size.height * 0.02)
+                        .padding(.bottom, 5)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                    
+                    // Top Section (title, score, bins)
+                    topSection(geometry: geometry)
+                        .frame(maxHeight: geometry.size.height * 0.45)
+                    
+                    // Remove the Divider() that was here
+                    
+                    // Bottom Section (draggable items + feedback)
+                    bottomSection
+                        .frame(maxHeight: geometry.size.height * 0.45)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color(UIColor.systemBackground))
+                .onAppear {
+                    items = Array(allItems.shuffled().prefix(5))
+                    score = 0
+                    feedback = ""
+                    gameWon = false
+                }
+            }
+            .navigationBarHidden(true)
         }
-        .navigationBarTitle("", displayMode: .inline)
+        .navigationViewStyle(StackNavigationViewStyle())
+        .edgesIgnoringSafeArea(.all)
         .overlay(winOverlay)
-        .onAppear {
-            // Reset game state when the view appears
-            items = Array(allItems.shuffled().prefix(5))
-            score = 0
-            feedback = ""
-            gameWon = false
-        }
     }
     
-    // MARK: - Top Section (Bins)
-    
-    var topSection: some View {
+    // Top half: Title, Score, Bins
+    func topSection(geometry: GeometryProxy) -> some View {
         VStack(spacing: 10) {
             Text("Recycling Sorting Game")
-                .font(.largeTitle)
-                .padding(.top)
+                .font(horizontalSizeClass == .regular ? .largeTitle : .title)
+                .padding(.top, 5)
             
             Text("Score: \(score)")
                 .font(.title2)
             
-            // Two rows of bins: 3 in first row, 2 in second.
+            // Bins in two rows: 3 in first, 2 in second
             VStack(spacing: 10) {
                 HStack(spacing: 10) {
-                    RecyclingBinView(binName: "Plastic Bin", onDropAction: handleDrop)
-                    RecyclingBinView(binName: "Paper Bin", onDropAction: handleDrop)
-                    RecyclingBinView(binName: "Glass Bin", onDropAction: handleDrop)
+                    ForEach(bins.prefix(3), id: \.self) { bin in
+                        RecyclingBinView(binName: bin, onDropAction: handleDrop)
+                            .frame(maxWidth: .infinity)
+                    }
                 }
                 HStack(spacing: 10) {
-                    RecyclingBinView(binName: "Metal Bin", onDropAction: handleDrop)
-                    RecyclingBinView(binName: "Compost Bin", onDropAction: handleDrop)
+                    ForEach(bins.suffix(2), id: \.self) { bin in
+                        RecyclingBinView(binName: bin, onDropAction: handleDrop)
+                            .frame(maxWidth: .infinity)
+                    }
                 }
             }
+            .padding(.horizontal)
         }
     }
     
-    // MARK: - Bottom Section (Draggable Items)
-    
+    // Bottom half: Draggable items + feedback
     var bottomSection: some View {
         VStack {
             Text("Drag the item into the correct bin")
                 .font(.headline)
                 .padding(.top)
             
-            // Use HStack with top alignment to ensure all emoji containers line up.
             HStack(alignment: .top, spacing: 20) {
                 ForEach(items) { item in
                     VStack(spacing: 5) {
-                        // Fixed container for the emoji.
                         Text(item.name)
                             .font(.system(size: 40))
                             .frame(width: 60, height: 60)
                             .background(Color.orange.opacity(0.3))
                             .cornerRadius(10)
                             .onDrag { NSItemProvider(object: item.name as NSString) }
-                        // Description flows below.
+                        
                         Text(item.itemDescription)
                             .font(.caption)
                             .foregroundColor(.secondary)
@@ -133,7 +128,10 @@ struct SortingGameView: View {
                     }
                 }
             }
+            .padding(.horizontal)
+            
             Spacer()
+            
             Text(feedback)
                 .font(.headline)
                 .foregroundColor(.blue)
@@ -141,12 +139,11 @@ struct SortingGameView: View {
         }
     }
     
-    // MARK: - Win Overlay
-    
+    // Win overlay
     var winOverlay: some View {
         Group {
             if gameWon {
-                Color.black.opacity(0.5)
+                Color.black.opacity(0.8)
                     .edgesIgnoringSafeArea(.all)
                 VStack(spacing: 20) {
                     Text("Congratulations!")
@@ -177,12 +174,7 @@ struct SortingGameView: View {
         }
     }
     
-    // MARK: - Drop Handling
-    
-    /// Called when an emoji is dropped into a bin.
-    /// - Parameters:
-    ///   - droppedEmoji: The emoji string dropped.
-    ///   - bin: The name of the bin where the emoji was dropped.
+    // Handle dropping an emoji into a bin
     func handleDrop(for droppedEmoji: String, bin: String) {
         guard let index = items.firstIndex(where: { $0.name == droppedEmoji }) else { return }
         let item = items[index]
@@ -192,9 +184,13 @@ struct SortingGameView: View {
             let generator = UINotificationFeedbackGenerator()
             generator.notificationOccurred(.success)
             AudioServicesPlaySystemSound(1025)
-            withAnimation { items.remove(at: index) }
+            withAnimation {
+                items.remove(at: index)
+            }
             if items.isEmpty {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { gameWon = true }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    gameWon = true
+                }
             }
         } else {
             feedback = "Oops! \(item.itemDescription) doesn't go in \(bin)."
@@ -205,11 +201,10 @@ struct SortingGameView: View {
     }
 }
 
-// MARK: - RecyclingBinView
-
+// A single bin drop target
 struct RecyclingBinView: View {
     let binName: String
-    var onDropAction: (String, String) -> Void  // (droppedEmoji, binName)
+    var onDropAction: (String, String) -> Void
     
     var body: some View {
         VStack {
@@ -217,7 +212,7 @@ struct RecyclingBinView: View {
                 .font(.caption)
                 .multilineTextAlignment(.center)
                 .padding(.bottom, 5)
-            // Bin drop area using a bin emoji.
+            
             Text("🗑️")
                 .font(.system(size: 50))
                 .padding()
@@ -238,12 +233,6 @@ struct RecyclingBinView: View {
                 }
         }
         .padding()
-    }
-}
-
-struct SortingGameView_Previews: PreviewProvider {
-    static var previews: some View {
-        SortingGameView()
     }
 }
 
