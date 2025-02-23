@@ -20,13 +20,11 @@ struct ContentView: View {
     ]
     @State private var isBotTyping = false
     
-    // For ImagePicker
     @State private var isShowingImagePicker = false
     @State private var selectedImage: UIImage?
     @State private var imagePickerSource: UIImagePickerController.SourceType = .photoLibrary
     @State private var showingActionSheet = false
     
-    // Suggestions based on ChatBotModel keywords
     var suggestions: [String] {
         let input = userInput.lowercased().trimmingCharacters(in: .whitespaces)
         guard !input.isEmpty else { return [] }
@@ -37,18 +35,15 @@ struct ContentView: View {
         NavigationView {
             GeometryReader { geometry in
                 VStack(spacing: 0) {
-                    // Header with gradient background
                     ZStack {
-                        // Gradient that starts at the top edge and fills 120 points of height
                         LinearGradient(
                             gradient: Gradient(colors: [Color.green, Color.blue]),
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                         .edgesIgnoringSafeArea(.top)
-                        .frame(height: 100)
+                        .frame(height: 85)
                         
-                        // The header text centered within the gradient
                         Text("♻️ Green Kaki")
                             .font(.largeTitle)
                             .fontWeight(.bold)
@@ -57,7 +52,6 @@ struct ContentView: View {
                     }
                     .frame(maxWidth: .infinity)
                     
-                    // Chat history
                     ScrollView {
                         ScrollViewReader { proxy in
                             VStack(alignment: .leading, spacing: 12) {
@@ -124,7 +118,6 @@ struct ContentView: View {
                         }
                     }
                     
-                    // Suggestions Bar
                     if !suggestions.isEmpty {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 8) {
@@ -142,7 +135,6 @@ struct ContentView: View {
                         }
                     }
                     
-                    // Input area with TextField, camera, and send button
                     HStack(spacing: 12) {
                         TextField("Type an item...", text: $userInput)
                             .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -178,7 +170,6 @@ struct ContentView: View {
                     }
                     .padding()
                     
-                    // Navigation to Sorting Game
                     NavigationLink(destination: SortingGameView().transition(.move(edge: .trailing))) {
                         Text("Play Sorting Game")
                             .font(.headline)
@@ -235,8 +226,7 @@ struct ContentView: View {
             withAnimation { messages.append(Message(text: "Could not convert image.", image: nil, isBot: true)) }
             return
         }
-        // Replace 'WasteClassifier' with your actual Core ML model name.
-        guard let model = try? VNCoreMLModel(for: WasteClassifier().model) else {
+        guard let model = try? VNCoreMLModel(for: WasteClassifier2().model) else {
             withAnimation { messages.append(Message(text: "Failed to load ML model.", image: nil, isBot: true)) }
             return
         }

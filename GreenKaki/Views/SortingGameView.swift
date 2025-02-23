@@ -5,20 +5,36 @@ struct SortingGameView: View {
     @Environment(\.presentationMode) var presentationMode
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
 
-    // Bank of 20 recycling items.
     let allItems: [RecyclingItem] = [
-        RecyclingItem(name: "🥤", correctBin: "Plastic Bin", itemDescription: "Plastic Bottle"),
+        RecyclingItem(name: "🥤", correctBin: "Plastic Bin", itemDescription: "Plastic Cup"),
         RecyclingItem(name: "🧴", correctBin: "Plastic Bin", itemDescription: "Lotion Bottle"),
-        RecyclingItem(name: "🍶", correctBin: "Plastic Bin", itemDescription: "Water Bottle"),
+        RecyclingItem(name: "🛍", correctBin: "Plastic Bin", itemDescription: "Plastic Bag"),
+        RecyclingItem(name: "📏", correctBin: "Plastic Bin", itemDescription: "Plastic Ruler"),
+        RecyclingItem(name: "🎤", correctBin: "Plastic Bin", itemDescription: "Plastic Microphone Toy"),
+
         RecyclingItem(name: "📰", correctBin: "Paper Bin", itemDescription: "Newspaper"),
         RecyclingItem(name: "📦", correctBin: "Paper Bin", itemDescription: "Cardboard Box"),
         RecyclingItem(name: "✉️", correctBin: "Paper Bin", itemDescription: "Envelope"),
+        RecyclingItem(name: "📜", correctBin: "Paper Bin", itemDescription: "Paper Scroll"),
+        RecyclingItem(name: "📕", correctBin: "Paper Bin", itemDescription: "Book"),
+        RecyclingItem(name: "📄", correctBin: "Paper Bin", itemDescription: "Loose Paper Sheet"),
+
         RecyclingItem(name: "🍾", correctBin: "Glass Bin", itemDescription: "Glass Bottle"),
-        RecyclingItem(name: "🏺", correctBin: "Glass Bin", itemDescription: "Jar"),
-        RecyclingItem(name: "🥫", correctBin: "Metal Bin", itemDescription: "Can"),
+        RecyclingItem(name: "🏺", correctBin: "Glass Bin", itemDescription: "Glass Jar"),
+        RecyclingItem(name: "🥛", correctBin: "Glass Bin", itemDescription: "Glass Cup"),
+        RecyclingItem(name: "🥂", correctBin: "Glass Bin", itemDescription: "Wine Glass"),
+        RecyclingItem(name: "🫙", correctBin: "Glass Bin", itemDescription: "Mason Jar"),
+        RecyclingItem(name: "🍯", correctBin: "Glass Bin", itemDescription: "Honey Jar"),
+
+        RecyclingItem(name: "🥫", correctBin: "Metal Bin", itemDescription: "Aluminum Can"),
         RecyclingItem(name: "🔩", correctBin: "Metal Bin", itemDescription: "Bolt"),
         RecyclingItem(name: "⚙️", correctBin: "Metal Bin", itemDescription: "Gear"),
-        RecyclingItem(name: "🍕", correctBin: "Compost Bin", itemDescription: "Pizza Box"),
+        RecyclingItem(name: "🔧", correctBin: "Metal Bin", itemDescription: "Wrench"),
+        RecyclingItem(name: "🔗", correctBin: "Metal Bin", itemDescription: "Metal Chain"),
+        RecyclingItem(name: "🗝", correctBin: "Metal Bin", itemDescription: "Metal Key"),
+        RecyclingItem(name: "🥄", correctBin: "Metal Bin", itemDescription: "Metal Spoon"),
+        RecyclingItem(name: "🛎", correctBin: "Metal Bin", itemDescription: "Small Bell"),
+
         RecyclingItem(name: "🍎", correctBin: "Compost Bin", itemDescription: "Apple Core"),
         RecyclingItem(name: "🍌", correctBin: "Compost Bin", itemDescription: "Banana Peel"),
         RecyclingItem(name: "🥬", correctBin: "Compost Bin", itemDescription: "Lettuce"),
@@ -26,10 +42,9 @@ struct SortingGameView: View {
         RecyclingItem(name: "🍄", correctBin: "Compost Bin", itemDescription: "Mushroom"),
         RecyclingItem(name: "🌽", correctBin: "Compost Bin", itemDescription: "Corn Cob"),
         RecyclingItem(name: "🥑", correctBin: "Compost Bin", itemDescription: "Avocado Pit"),
-        RecyclingItem(name: "🍇", correctBin: "Compost Bin", itemDescription: "Grapes")
     ]
+
     
-    // Game state: 5 random items.
     @State private var items: [RecyclingItem] = []
     @State private var score: Int = 0
     @State private var feedback: String = ""
@@ -41,18 +56,14 @@ struct SortingGameView: View {
         NavigationView {
             GeometryReader { geometry in
                 VStack(spacing: 0) {
-                    // Header with gradient background.
                     ZStack {
-                        // Gradient that starts at the top edge and fills 120 points of height
                         LinearGradient(
                             gradient: Gradient(colors: [Color.green, Color.blue]),
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                         .edgesIgnoringSafeArea(.top)
-                        .frame(height: 100)
-                        
-                        // The header text centered within the gradient
+                        .frame(height: 75)
                         Text("♻️ Green Kaki")
                             .font(.largeTitle)
                             .fontWeight(.bold)
@@ -60,13 +71,13 @@ struct SortingGameView: View {
                             .shadow(color: Color.black.opacity(0.3), radius: 3, x: 0, y: 2)
                     }
                     .frame(maxWidth: .infinity)
-
-
-                    // Top Section: Title, Score, and Bins.
+                    
+                    Spacer()
+                        .frame(height: 30)
+                    
                     topSection(geometry: geometry)
                         .frame(maxHeight: geometry.size.height * 0.45)
                     
-                    // Bottom Section: Draggable Items & Feedback.
                     bottomSection
                         .frame(maxHeight: geometry.size.height * 0.45)
                 }
@@ -86,7 +97,6 @@ struct SortingGameView: View {
         .overlay(winOverlay)
     }
     
-    // Top Section: Title, Score, and Bins arranged in two rows.
     func topSection(geometry: GeometryProxy) -> some View {
         VStack(spacing: 10) {
             Text("Recycling Sorting Game")
@@ -112,7 +122,6 @@ struct SortingGameView: View {
         }
     }
     
-    // Bottom Section: Draggable Items with Descriptions and Feedback.
     var bottomSection: some View {
         VStack {
             Text("Drag the item into the correct bin")
@@ -143,42 +152,63 @@ struct SortingGameView: View {
         }
     }
     
-    // Win Overlay: Displays when game is won.
     var winOverlay: some View {
         Group {
             if gameWon {
-                Color.black.opacity(0.5)
-                    .edgesIgnoringSafeArea(.all)
-                VStack(spacing: 20) {
-                    Text("Congratulations!")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                    Text("You have correctly sorted all of the items!")
-                        .font(.title2)
-                        .foregroundColor(.white)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                    Button(action: {
-                        presentationMode.wrappedValue.dismiss()
-                    }) {
-                        Text("Go Home")
-                            .font(.headline)
+                ZStack {
+                    Color.black.opacity(0.6)
+                        .edgesIgnoringSafeArea(.all)
+                    
+                    VStack(spacing: 20) {
+                        Image(systemName: "star.fill")
+                            .font(.system(size: 80))
+                            .foregroundColor(.yellow)
+                            .shadow(radius: 5)
+                        
+                        Text("Congratulations!")
+                            .font(.system(size: 34, weight: .bold, design: .rounded))
                             .foregroundColor(.white)
-                            .padding()
-                            .background(Color.green)
-                            .cornerRadius(10)
+                            .shadow(color: Color.black.opacity(0.3), radius: 3, x: 0, y: 2)
+                        
+                        Text("You have correctly sorted all of the items!")
+                            .font(.system(size: 20, design: .rounded))
+                            .foregroundColor(.white)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 20)
+                        
+                        Button(action: {
+                            presentationMode.wrappedValue.dismiss()
+                        }) {
+                            Text("Go Home")
+                                .font(.headline)
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [Color.blue, Color.purple]),
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                                .cornerRadius(10)
+                                .foregroundColor(.white)
+                                .shadow(radius: 3)
+                        }
+                        .padding(.horizontal, 20)
                     }
+                    .padding()
+                    .background(
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(Color.blue.opacity(0.85))
+                            .shadow(radius: 10)
+                    )
+                    .padding(.horizontal, 40)
                 }
-                .padding()
-                .background(Color.blue.opacity(0.7))
-                .cornerRadius(20)
-                .padding()
             }
         }
     }
+
     
-    // Handle drop action for a recycling item.
     func handleDrop(for droppedEmoji: String, bin: String) {
         guard let index = items.firstIndex(where: { $0.name == droppedEmoji }) else { return }
         let item = items[index]
@@ -203,7 +233,7 @@ struct SortingGameView: View {
 
 struct RecyclingBinView: View {
     let binName: String
-    var onDropAction: (String, String) -> Void  // (droppedEmoji, binName)
+    var onDropAction: (String, String) -> Void
     
     var body: some View {
         VStack {
